@@ -29,8 +29,8 @@ jobs:
       - name: Upload SQL script artifact
         uses: actions/upload-artifact@v2
         with:
-          name: GH_Actions_EFMigration{{ github.sha }}
+          name: GHActions_EFMigration
           path: ./sql/ef-migration-script.sql
 
       - name: Update Database
-        run: dotnet ef database update --no-build --connection ${{ secrets.CONNECTION_STRING }}
+        run: dotnet ef database update  --connection "${{ secrets.CONNECTION_STRING }}" --no-build
