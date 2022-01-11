@@ -1,0 +1,36 @@
+name: BuildAndMigrateDatabase
+
+on: workflow_dispatch
+
+jobs:
+  build_and_migrate:
+    name: "Build and Migrate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Install EF
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate SQL scripts
+        run: dotnet ef migrations script --output ./sql/ef-migration-script.sql --idempotent --no-build
+
+      - name: Upload SQL script artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: GH_Actions_EFMigration{{ github.sha }}
+          path: ./sql/ef-migration-script.sql
+
+      - name: Update Database
+        run: dotnet ef database update --no-build --connection ${{ secrets.CONNECTION_STRING }}
